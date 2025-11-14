@@ -1612,6 +1612,7 @@
             }
         });
 
+        // MELHORIA: Limpar seleções ao ir para próxima marmita
         nextMarmitaBtn.addEventListener('click', () => {
             // Verificar se todas as opções foram selecionadas para a marmita atual
             const currentMarmita = currentOrder.marmitas[currentMarmitaIndex];
@@ -1624,6 +1625,16 @@
             
             if (currentMarmitaIndex < marmitaQuantity - 1) {
                 currentMarmitaIndex++;
+                
+                // Limpar todas as seleções visuais
+                document.querySelectorAll('.marmita-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                document.querySelectorAll('.option-item').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
                 updateMarmitaProgress();
                 loadMarmitaOptions();
             }
