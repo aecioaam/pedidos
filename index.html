@@ -663,6 +663,17 @@
             font-weight: 600;
         }
         
+        .delivery-fee-info {
+            background-color: rgba(44, 85, 48, 0.05);
+            border: 1px solid var(--primary);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
         footer {
             background-color: var(--dark);
             color: white;
@@ -991,6 +1002,12 @@
                 <div id="etapa-checkout" class="order-step hidden">
                     <h2><i class="fas fa-credit-card"></i> Finalizar Pedido</h2>
                     
+                    <!-- Informação da taxa de entrega -->
+                    <div class="delivery-fee-info" id="delivery-fee-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <span id="delivery-fee-text">Taxa de entrega: R$ <span id="delivery-fee-value">${menuData.prices.delivery.toFixed(2)}</span></span>
+                    </div>
+                    
                     <form id="checkout-form">
                         <div class="form-group">
                             <label for="customer-name" class="required">Nome completo:</label>
@@ -1012,7 +1029,7 @@
                                 
                                 <div>
                                     <input type="radio" id="delivery-type-delivery" name="delivery-type" value="entrega">
-                                    <label for="delivery-type-delivery">Entrega</label>
+                                    <label for="delivery-type-delivery">Entrega (+ R$ <span id="delivery-fee-display">${menuData.prices.delivery.toFixed(2)}</span>)</label>
                                 </div>
                             </div>
                         </div>
@@ -1241,6 +1258,10 @@
         const paymentMethodInput = document.getElementById('payment-method');
         const trocoSection = document.getElementById('troco-section');
         const prevToResumoBtn = document.getElementById('prev-to-resumo');
+        const deliveryFeeInfo = document.getElementById('delivery-fee-info');
+        const deliveryFeeText = document.getElementById('delivery-fee-text');
+        const deliveryFeeValue = document.getElementById('delivery-fee-value');
+        const deliveryFeeDisplay = document.getElementById('delivery-fee-display');
         
         // Elementos administrativos
         const adminLogin = document.getElementById('admin-login');
@@ -1265,12 +1286,20 @@
             const savedData = localStorage.getItem('chaléRestauranteData');
             if (savedData) {
                 menuData = JSON.parse(savedData);
+                // Atualizar exibição da taxa de entrega
+                updateDeliveryFeeDisplay();
             }
         }
 
         // Salvar dados no localStorage
         function saveData() {
             localStorage.setItem('chaléRestauranteData', JSON.stringify(menuData));
+        }
+
+        // Atualizar exibição da taxa de entrega
+        function updateDeliveryFeeDisplay() {
+            deliveryFeeValue.textContent = menuData.prices.delivery.toFixed(2);
+            deliveryFeeDisplay.textContent = menuData.prices.delivery.toFixed(2);
         }
 
         // Navegação entre páginas
@@ -1346,6 +1375,9 @@
             // Resetar seleções de pagamento
             paymentOptions.forEach(option => option.classList.remove('selected'));
             paymentMethodInput.value = '';
+            
+            // Atualizar exibição da taxa de entrega
+            updateDeliveryFeeDisplay();
         }
 
         // Controle de quantidade de marmitas
@@ -1960,9 +1992,13 @@
                 if (radio.value === 'entrega') {
                     deliveryAddress.classList.remove('hidden');
                     document.getElementById('customer-address').required = true;
+                    // Atualizar a informação da taxa de entrega
+                    deliveryFeeInfo.style.display = 'block';
                 } else {
                     deliveryAddress.classList.add('hidden');
                     document.getElementById('customer-address').required = false;
+                    // Ocultar a informação da taxa de entrega
+                    deliveryFeeInfo.style.display = 'none';
                 }
                 
                 // Atualizar o resumo para incluir/excluir a taxa de entrega
@@ -2137,6 +2173,7 @@
             menuData.prices.delivery = parseFloat(document.getElementById('delivery-fee').value);
             
             saveData();
+            updateDeliveryFeeDisplay();
             showAlert('Preços atualizados com sucesso!', 'success');
         });
 
