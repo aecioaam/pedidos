@@ -727,6 +727,26 @@
             color: var(--primary);
         }
         
+        /* Estilos para as categorias recolhíveis no admin */
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 1rem;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+        }
+        
+        .category-content {
+            margin-bottom: 1.5rem;
+        }
+        
+        .category-content.collapsed {
+            display: none;
+        }
+        
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -1232,6 +1252,14 @@
         const menuItemsContainer = document.getElementById('menu-items-container');
         const ordersList = document.getElementById('orders-list');
 
+        // Função para rolar para o topo da página
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
         // Carregar dados do localStorage
         function loadData() {
             const savedData = localStorage.getItem('chaléRestauranteData');
@@ -1266,6 +1294,9 @@
                 if (targetPage === 'orders') {
                     resetOrderFlow();
                 }
+                
+                // Rolar para o topo ao mudar de página
+                scrollToTop();
             });
         });
 
@@ -1279,6 +1310,9 @@
             document.querySelector('[data-page="orders"]').classList.add('active');
             
             resetOrderFlow();
+            
+            // Rolar para o topo
+            scrollToTop();
         });
 
         // Resetar fluxo do pedido
@@ -1356,6 +1390,9 @@
             
             // Carregar opções de personalização
             loadMarmitaOptions();
+            
+            // Rolar para o topo
+            scrollToTop();
         });
 
         // Atualizar indicador de progresso das marmitas
@@ -1382,6 +1419,9 @@
                         currentMarmitaIndex = i;
                         updateMarmitaProgress();
                         loadMarmitaOptions();
+                        
+                        // Rolar para o topo ao mudar de marmita
+                        scrollToTop();
                     }
                 });
                 
@@ -1609,6 +1649,9 @@
                 currentMarmitaIndex--;
                 updateMarmitaProgress();
                 loadMarmitaOptions();
+                
+                // Rolar para o topo ao mudar de marmita
+                scrollToTop();
             }
         });
 
@@ -1637,6 +1680,9 @@
                 
                 updateMarmitaProgress();
                 loadMarmitaOptions();
+                
+                // Rolar para o topo ao mudar de marmita
+                scrollToTop();
             }
         });
 
@@ -1649,6 +1695,9 @@
             document.getElementById('step1').classList.add('active');
             document.getElementById('step2').classList.remove('active');
             document.getElementById('step1').classList.remove('completed');
+            
+            // Rolar para o topo
+            scrollToTop();
         });
 
         // Avançar para bebidas
@@ -1673,6 +1722,9 @@
             document.getElementById('step3').classList.add('active');
             
             loadBebidasOptions();
+            
+            // Rolar para o topo
+            scrollToTop();
         });
 
         // Carregar opções de bebidas
@@ -1760,6 +1812,9 @@
             document.getElementById('step4').classList.add('active');
             
             updateOrderSummary();
+            
+            // Rolar para o topo
+            scrollToTop();
         });
 
         // Voltar para personalização
@@ -1771,6 +1826,9 @@
             document.getElementById('step3').classList.remove('active');
             document.getElementById('step2').classList.add('active');
             document.getElementById('step2').classList.remove('completed');
+            
+            // Rolar para o topo
+            scrollToTop();
         });
 
         // Avançar para resumo
@@ -1784,6 +1842,9 @@
             document.getElementById('step4').classList.add('active');
             
             updateOrderSummary();
+            
+            // Rolar para o topo
+            scrollToTop();
         });
 
         // Atualizar resumo do pedido
@@ -1829,6 +1890,19 @@
                 });
             }
             
+            // Taxa de entrega (se aplicável)
+            const deliveryType = document.querySelector('input[name="delivery-type"]:checked');
+            if (deliveryType && deliveryType.value === 'entrega') {
+                const deliveryDiv = document.createElement('div');
+                deliveryDiv.className = 'order-item';
+                deliveryDiv.innerHTML = `
+                    <div>Taxa de entrega</div>
+                    <div>R$ ${menuData.prices.delivery.toFixed(2)}</div>
+                `;
+                orderSummaryContent.appendChild(deliveryDiv);
+                total += menuData.prices.delivery;
+            }
+            
             // Total
             const totalDiv = document.createElement('div');
             totalDiv.className = 'total';
@@ -1847,6 +1921,9 @@
             document.getElementById('step4').classList.remove('active');
             document.getElementById('step3').classList.add('active');
             document.getElementById('step3').classList.remove('completed');
+            
+            // Rolar para o topo
+            scrollToTop();
         });
 
         // Avançar para checkout
@@ -1858,6 +1935,9 @@
             document.getElementById('step4').classList.remove('active');
             document.getElementById('step4').classList.add('completed');
             document.getElementById('step5').classList.add('active');
+            
+            // Rolar para o topo
+            scrollToTop();
         });
 
         // Voltar para resumo
@@ -1869,6 +1949,9 @@
             document.getElementById('step5').classList.remove('active');
             document.getElementById('step4').classList.add('active');
             document.getElementById('step4').classList.remove('completed');
+            
+            // Rolar para o topo
+            scrollToTop();
         });
 
         // Alternar endereço de entrega
@@ -1881,6 +1964,9 @@
                     deliveryAddress.classList.add('hidden');
                     document.getElementById('customer-address').required = false;
                 }
+                
+                // Atualizar o resumo para incluir/excluir a taxa de entrega
+                updateOrderSummary();
             });
         });
 
@@ -2097,7 +2183,16 @@
             Object.keys(menuData.categories).forEach(category => {
                 const categoryDiv = document.createElement('div');
                 categoryDiv.className = 'menu-category';
-                categoryDiv.innerHTML = `<h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>`;
+                
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-header';
+                categoryHeader.innerHTML = `
+                    <h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+                    <i class="fas fa-chevron-down"></i>
+                `;
+                
+                const categoryContent = document.createElement('div');
+                categoryContent.className = 'category-content';
                 
                 const itemsList = document.createElement('div');
                 itemsList.className = 'menu-items';
@@ -2135,8 +2230,23 @@
                     });
                 }
                 
-                categoryDiv.appendChild(itemsList);
+                categoryContent.appendChild(itemsList);
+                categoryDiv.appendChild(categoryHeader);
+                categoryDiv.appendChild(categoryContent);
                 menuItemsContainer.appendChild(categoryDiv);
+                
+                // Adicionar funcionalidade de expandir/recolher
+                categoryHeader.addEventListener('click', () => {
+                    categoryContent.classList.toggle('collapsed');
+                    const icon = categoryHeader.querySelector('i');
+                    if (categoryContent.classList.contains('collapsed')) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-right');
+                    } else {
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                });
             });
         }
 
